@@ -1,6 +1,21 @@
 const router = require("express").Router();
 const db = require('../users/user-helpers');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+//createToken Function
+function createToken(user){
+    const payload = {
+      subject: user.id,
+      username: user.username,
+      role: user.role
+    };
+    const secret = process.env.JWT_SECRET || 'secret baby'
+    const options = {
+      expiresIn: '1d',
+    }
+    return jwt.sign(payload, secret, options)
+  }
 
 //post/ register
 router.post('/register', (req,res) => {
@@ -26,8 +41,9 @@ router.post('/login', (req,res) => {
     .then(([user]) => {
         console.log("USER IN LOGIN",user)
         if (user && bcrypt.compareSync(password, user.password)) {
+            const token = createToken(user)
             req.session.user = {id: user.id, username: user.username}
-            res.status(200).json({welcome: user.username, session: req.session})
+            res.status(200).json({welcome: user.username, session: req.session, token})
         } else {
             res.status(401).json({message: "you can not pass!!!"})
         }
