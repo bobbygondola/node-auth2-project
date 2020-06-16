@@ -5,6 +5,7 @@ const server = express();
 
 const dbConnection = require('./data/data-config')
 
+const requiresAuth = require('./auth/requires-auth')
 const session = require('express-session');
 const KnexSessionStore = require('connect-session-knex')(session);
 const sessionConfig = {
@@ -33,7 +34,7 @@ const authRouter = require('./auth/auth-router');
 const usersRouter = require('./users/users-router');
 
 server.use('/api/auth', authRouter);
-server.use('/api/users', usersRouter);
+server.use('/api/users', requiresAuth, usersRouter);
 
 server.get('/', (req,res) => {
     res.status(200).json({api:'is up'});
